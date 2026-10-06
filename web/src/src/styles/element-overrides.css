@@ -1,0 +1,198 @@
+
+
+:root {
+  --el-color-primary: var(--srs-primary);
+  --el-color-primary-light-3: var(--srs-primary-light);
+  --el-color-primary-dark-2: var(--srs-primary-dark);
+  --el-color-primary-light-8: var(--srs-primary-bg);
+  --el-color-primary-light-9: var(--srs-primary-bg);
+
+  --el-bg-color: var(--srs-bg-page);
+  --el-bg-color-overlay: var(--srs-bg-card);
+  --el-bg-color-page: var(--srs-bg-page);
+  --el-fill-color: var(--srs-bg-hover);
+  --el-fill-color-light: var(--srs-bg-hover);
+  --el-fill-color-lighter: var(--srs-bg-page);
+
+  --el-text-color-primary: var(--srs-text-primary);
+  --el-text-color-regular: var(--srs-text-secondary);
+  --el-text-color-secondary: var(--srs-text-tertiary);
+  --el-text-color-placeholder: var(--srs-text-placeholder);
+
+  --el-border-color: var(--srs-border);
+  --el-border-color-light: var(--srs-border-light);
+  --el-border-color-lighter: var(--srs-border-light);
+  --el-border-color-extra-light: var(--srs-border-light);
+  --el-border-radius-base: var(--srs-radius-sm);
+  --el-border-radius-small: 4px;
+  --el-border-radius-round: 20px;
+
+  --el-box-shadow: var(--srs-shadow-sm);
+  --el-box-shadow-light: var(--srs-shadow-sm);
+  --el-box-shadow-lighter: var(--srs-shadow-sm);
+
+  --el-font-size-base: 14px;
+  --el-font-size-small: 13px;
+  --el-font-size-large: 16px;
+
+  --el-table-border-color: var(--srs-border);
+  --el-table-header-bg-color: var(--srs-bg-hover);
+  --el-table-tr-bg-color: var(--srs-bg-card);
+  --el-table-row-hover-bg-color: var(--srs-bg-hover);
+  --el-table-header-text-color: var(--srs-text-secondary);
+
+  --el-menu-item-height: 44px;
+  --el-menu-sub-item-height: 40px;
+
+  --el-steps-finish-color: var(--srs-primary);
+  --el-step-title-font-size: 14px;
+  --el-step-header-font-size: 14px;
+
+  --el-tag-font-size: 12px;
+
+  --el-card-padding: 20px;
+  --el-card-border-radius: var(--srs-radius-lg);
+}
+
+html.dark {
+
+  --el-bg-color: var(--srs-bg-page);
+  --el-bg-color-overlay: var(--srs-bg-card);
+  --el-bg-color-page: var(--srs-bg-page);
+  --el-fill-color: var(--srs-bg-hover);
+  --el-fill-color-light: var(--srs-bg-hover);
+  --el-fill-color-lighter: var(--srs-bg-card);
+  --el-fill-color-blank: var(--srs-bg-card);
+
+  --el-text-color-primary: var(--srs-text-primary);
+  --el-text-color-regular: var(--srs-text-secondary);
+  --el-text-color-placeholder: var(--srs-text-placeholder);
+  --el-text-color-disabled: var(--srs-text-tertiary);
+
+  --el-border-color: var(--srs-border);
+  --el-border-color-light: var(--srs-border-light);
+  --el-border-color-lighter: var(--srs-border-light);
+  --el-border-color-extra-light: var(--srs-border-light);
+  --el-border-color-dark: var(--srs-border);
+
+  --el-card-bg-color: var(--srs-bg-card);
+  --el-card-border-color: var(--srs-border);
+
+  --el-menu-bg-color: transparent;
+  --el-menu-text-color: #bfcbd9;
+  --el-menu-hover-bg-color: rgba(255, 255, 255, 0.06);
+  --el-menu-hover-text-color: #ffffff;
+  --el-menu-active-color: #60a5fa;
+  --el-menu-item-hover-fill: rgba(255, 255, 255, 0.06);
+
+  --el-dialog-bg-color: var(--srs-bg-card);
+  --el-dialog-border-color: var(--srs-border);
+  --el-dialog-box-shadow: var(--srs-shadow-lg);
+
+  --el-input-bg-color: var(--srs-bg-input);
+  --el-input-border-color: var(--srs-border-input);
+  --el-input-hover-border-color: var(--srs-text-tertiary);
+  --el-input-focus-border-color: var(--srs-primary);
+  --el-input-placeholder-color: var(--srs-text-placeholder);
+  --el-input-text-color: var(--srs-text-primary);
+
+  --el-select-bg-color: var(--srs-bg-card);
+  --el-select-border-color-hover: var(--srs-text-tertiary);
+  --el-select-input-focus-border-color: var(--srs-primary);
+
+  --el-date-editor-bg-color: var(--srs-bg-input);
+  --el-date-editor-border-color: var(--srs-border-input);
+
+  --el-table-bg-color: var(--srs-bg-card);
+  --el-table-border-color: var(--srs-border);
+  --el-table-header-bg-color: var(--srs-bg-hover);
+  --el-table-tr-bg-color: var(--srs-bg-card);
+  --el-table-row-hover-bg-color: var(--srs-bg-hover);
+  --el-table-header-text-color: var(--srs-text-secondary);
+  --el-table-text-color: var(--srs-text-primary);
+  --el-table-fixed-column-bg-color: var(--srs-bg-card);
+
+  --el-pagination-bg-color: var(--srs-bg-card);
+  --el-pagination-button-bg-color: var(--srs-bg-hover);
+  --el-pagination-button-hover-bg-color: var(--srs-primary-bg);
+  --el-pagination-button-disabled-bg-color: var(--srs-bg-card);
+
+  --el-tag-bg-color: transparent;
+  --el-tag-border-color: var(--srs-border);
+  --el-tag-text-color: var(--srs-text-secondary);
+
+  --el-alert-bg-color: var(--srs-bg-card);
+
+  --el-steps-finish-color: var(--srs-primary);
+  --el-step-line-color: var(--srs-border);
+  --el-step-wait-icon-color: var(--srs-text-tertiary);
+  --el-step-wait-title-color: var(--srs-text-tertiary);
+  --el-step-wait-icon-bg-color: var(--srs-bg-hover);
+  --el-step-finish-title-color: var(--srs-primary);
+
+  --el-empty-fill-color-0: var(--srs-bg-card);
+  --el-empty-fill-color-1: var(--srs-bg-hover);
+  --el-empty-fill-color-2: var(--srs-border);
+  --el-empty-fill-color-3: var(--srs-border);
+  --el-empty-fill-color-4: var(--srs-bg-page);
+  --el-empty-fill-color-5: var(--srs-bg-hover);
+  --el-empty-fill-color-6: var(--srs-bg-page);
+  --el-empty-fill-color-7: var(--srs-bg-card);
+  --el-empty-fill-color-8: var(--srs-bg-hover);
+  --el-empty-fill-color-9: var(--srs-border);
+
+  --el-radio-bg-color: var(--srs-bg-card);
+  --el-radio-input-border-color: var(--srs-border-input);
+  --el-radio-input-bg-color: var(--srs-bg-card);
+  --el-radio-checked-bg-color: var(--srs-primary);
+  --el-radio-disabled-bg-color: var(--srs-bg-hover);
+  --el-radio-disabled-input-border-color: var(--srs-border);
+
+  --el-checkbox-bg-color: var(--srs-bg-card);
+  --el-checkbox-input-border-color: var(--srs-border-input);
+  --el-checkbox-disabled-bg-color: var(--srs-bg-hover);
+
+  --el-switch-off-color: var(--srs-bg-hover);
+  --el-switch-on-color: var(--srs-primary);
+  --el-switch-border-color: var(--srs-border-input);
+
+  --el-tooltip-bg-color: var(--srs-bg-card);
+  --el-tooltip-border-color: var(--srs-border);
+
+  --el-message-bg-color: var(--srs-bg-card);
+  --el-message-border-color: var(--srs-border);
+  --el-message-shadow: var(--srs-shadow-md);
+
+  --el-messagebox-bg-color: var(--srs-bg-card);
+  --el-messagebox-border-color: var(--srs-border);
+
+  --el-drawer-bg-color: var(--srs-bg-card);
+  --el-drawer-border-color: var(--srs-border);
+
+  --el-collapse-header-bg-color: var(--srs-bg-card);
+  --el-collapse-content-bg-color: var(--srs-bg-page);
+
+  --el-descriptions-table-bg-color: var(--srs-bg-card);
+  --el-descriptions-item-bg-color: var(--srs-bg-card);
+  --el-descriptions-item-bordered-label-bg-color: var(--srs-bg-hover);
+
+  --el-tabs-header-bg-color: var(--srs-bg-card);
+  --el-tab-item-bg-color: var(--srs-bg-card);
+  --el-tab-item-active-bg-color: var(--srs-bg-card);
+  --el-tab-item-hover-bg-color: var(--srs-bg-hover);
+
+  --el-upload-dragger-bg-color: var(--srs-bg-card);
+  --el-upload-dragger-border-color: var(--srs-border-input);
+  --el-upload-dragger-hover-border-color: var(--srs-primary);
+
+  --el-divider-border-color: var(--srs-border-light);
+
+  --el-badge-bg-color: var(--srs-danger);
+
+  --el-link-text-color: var(--srs-primary);
+  --el-link-hover-text-color: var(--srs-primary-light);
+
+  --el-box-shadow: var(--srs-shadow-sm);
+  --el-box-shadow-light: var(--srs-shadow-sm);
+  --el-box-shadow-lighter: var(--srs-shadow-sm);
+}

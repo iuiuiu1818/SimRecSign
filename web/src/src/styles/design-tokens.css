@@ -1,0 +1,113 @@
+
+
+:root {
+
+  --srs-primary: #2563eb;
+  --srs-primary-light: #3b82f6;
+  --srs-primary-dark: #1d4ed8;
+  --srs-primary-bg: #eff6ff;
+  --srs-primary-border: #bfdbfe;
+
+  --srs-bg-page: #f8f9ff;
+  --srs-bg-card: #ffffff;
+  --srs-bg-sidebar: #1d1e1f;
+  --srs-bg-header: #ffffff;
+  --srs-bg-input: #ffffff;
+  --srs-bg-hover: #f5f7fa;
+
+  --srs-text-primary: #0f172a;
+  --srs-text-secondary: #475569;
+  --srs-text-tertiary: #94a3b8;
+  --srs-text-inverse: #ffffff;
+  --srs-text-placeholder: #c0c4cc;
+
+  --srs-border: #e8ecf1;
+  --srs-border-light: #f1f5f9;
+  --srs-border-input: #dcdfe6;
+
+  --srs-success: #16a34a;
+  --srs-success-bg: #f0fdf4;
+  --srs-warning: #e6a23c;
+  --srs-warning-bg: #fefce8;
+  --srs-danger: #f56c6c;
+  --srs-danger-bg: #fef2f2;
+  --srs-info: #64748b;
+  --srs-info-bg: #f8fafc;
+
+  --srs-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --srs-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --srs-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+  --srs-radius-sm: 6px;
+  --srs-radius-md: 10px;
+  --srs-radius-lg: 12px;
+  --srs-radius-xl: 16px;
+
+  --dc-container-bg: #f4fdfc;
+  --dc-container-border: #c8e6e0;
+  --dc-container-accent: #13c2c2;
+  --dc-group-bg: #fffaf2;
+  --dc-group-border: #f0c686;
+  --dc-group-accent: #fa8c16;
+
+  --srs-space-xs: 4px;
+  --srs-space-sm: 8px;
+  --srs-space-md: 16px;
+  --srs-space-lg: 24px;
+  --srs-space-xl: 32px;
+
+  --srs-transition-fast: 0.15s ease;
+  --srs-transition-normal: 0.2s ease;
+  --srs-transition-slow: 0.3s ease;
+
+  --srs-sidebar-width: 220px;
+  --srs-sidebar-collapsed-width: 64px;
+  --srs-header-height: 60px;
+
+  --srs-font-mono: 'SF Mono', 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+html.dark {
+  --srs-primary: #60a5fa;
+  --srs-primary-light: #93c5fd;
+  --srs-primary-dark: #3b82f6;
+  --srs-primary-bg: #1e293b;
+  --srs-primary-border: #1e3a5f;
+
+  --srs-bg-page: #0f172a;
+  --srs-bg-card: #1e293b;
+  --srs-bg-sidebar: #0f172a;
+  --srs-bg-header: #1e293b;
+  --srs-bg-input: #1e293b;
+  --srs-bg-hover: #334155;
+
+  --srs-text-primary: #f1f5f9;
+  --srs-text-secondary: #94a3b8;
+  --srs-text-tertiary: #64748b;
+  --srs-text-inverse: #0f172a;
+  --srs-text-placeholder: #64748b;
+
+  --srs-border: #334155;
+  --srs-border-light: #1e293b;
+  --srs-border-input: #475569;
+
+  --srs-success: #4ade80;
+  --srs-success-bg: #052e16;
+  --srs-warning: #fbbf24;
+  --srs-warning-bg: #451a03;
+  --srs-danger: #f87171;
+  --srs-danger-bg: #450a0a;
+  --srs-info: #94a3b8;
+  --srs-info-bg: #1e293b;
+
+  --srs-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --srs-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --srs-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+  --dc-container-bg: #0e2421;
+  --dc-container-border: #1f4e48;
+  --dc-container-accent: #2dd4bf;
+  --dc-group-bg: #25150a;
+  --dc-group-border: #5a3a08;
+  --dc-group-accent: #fb923c;
+}

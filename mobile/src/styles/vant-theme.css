@@ -1,0 +1,78 @@
+
+
+:root {
+
+  --van-primary-color: var(--srs-primary);
+
+  --van-background: var(--srs-bg-page);
+  --van-background-2: var(--srs-bg-card);
+  --van-background-3: var(--srs-bg-hover);
+
+  --van-text-color: var(--srs-text-primary);
+  --van-text-color-2: var(--srs-text-secondary);
+  --van-text-color-3: var(--srs-text-tertiary);
+  --van-text-link-color: var(--srs-primary);
+
+  --van-border-color: var(--srs-border);
+  --van-active-color: var(--srs-bg-hover);
+
+  --van-radius-md: var(--srs-radius-sm);
+  --van-radius-lg: var(--srs-radius-md);
+  --van-radius-xl: var(--srs-radius-lg);
+
+  --van-shadow: var(--srs-shadow-md);
+
+  --van-cell-group-background: var(--srs-bg-card);
+  --van-cell-background: var(--srs-bg-card);
+  --van-cell-value-color: var(--srs-text-secondary);
+  --van-cell-label-color: var(--srs-text-tertiary);
+
+  --van-field-input-text-color: var(--srs-text-primary);
+  --van-field-placeholder-text-color: var(--srs-text-placeholder);
+  --van-field-label-color: var(--srs-text-primary);
+
+  --van-button-primary-background: var(--srs-primary);
+  --van-button-primary-border-color: var(--srs-primary);
+
+  --van-button-default-color: var(--srs-text-primary);
+  --van-button-default-background: var(--srs-bg-card);
+  --van-button-default-border-color: var(--srs-border-input);
+
+  --van-button-plain-background: transparent;
+
+  --van-nav-bar-background: var(--srs-bg-header);
+  --van-nav-bar-title-text-color: var(--srs-text-primary);
+  --van-nav-bar-icon-color: var(--srs-text-primary);
+  --van-nav-bar-text-color: var(--srs-text-primary);
+
+  --van-tabbar-background: var(--srs-bg-card);
+  --van-tabbar-item-active-color: var(--srs-primary);
+  --van-tabbar-item-text-color: var(--srs-text-tertiary);
+
+  --van-toast-background: rgba(15, 23, 42, 0.85);
+  --van-toast-text-color: #fff;
+
+  --van-dialog-background: var(--srs-bg-card);
+  --van-dialog-header-text-color: var(--srs-text-primary);
+  --van-dialog-message-text-color: var(--srs-text-secondary);
+
+  --van-tabs-bottom-bar-color: var(--srs-primary);
+  --van-tabs-nav-background: var(--srs-bg-card);
+  --van-tab-text-color: var(--srs-text-secondary);
+  --van-tab-active-text-color: var(--srs-text-primary);
+
+  --van-empty-description-color: var(--srs-text-tertiary);
+  --van-skeleton-row-background-color: var(--srs-bg-hover);
+}
+
+html.dark {
+  --van-background: var(--srs-bg-page);
+  --van-background-2: var(--srs-bg-card);
+  --van-background-3: var(--srs-bg-hover);
+  --van-text-color: var(--srs-text-primary);
+  --van-text-color-2: var(--srs-text-secondary);
+  --van-text-color-3: var(--srs-text-tertiary);
+  --van-border-color: var(--srs-border);
+  --van-active-color: var(--srs-bg-hover);
+  --van-cell-private-bottom-border-color: var(--srs-border-light);
+}

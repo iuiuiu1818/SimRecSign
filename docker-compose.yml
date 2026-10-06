@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  server:
+    build: .
+    container_name: simrecsign
+    ports:
+      - "8080:8080"
+    environment:
+      - HTTP_ADDR=:8080
+      - DB_DRIVER=sqlite
+      - DB_DSN=/app/data/simrecsign.db
+      - STORAGE_BASEPATH=/app/storage
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - JWT_TTL_MINUTES=1440
+      - SEED_ADMIN_EMAIL=admin@simrecsign.local
+      - SEED_ADMIN_PASSWORD=admin12345
+      - FONT_PATH=/app/fonts/NotoSansSC-Regular.ttf
+      # DEMO_MODE=true  # 演示模式：禁止写操作（注册/创建/编辑/删除），仅允许浏览和签署
+    volumes:
+      - simrecsign-data:/app/data
+      - simrecsign-storage:/app/storage
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # 可选：MySQL 作为生产数据库
+  # 使用时设置环境变量 DB_DRIVER=mysql DB_DSN=user:pass@tcp(mysql:3306)/simrecsign?charset=utf8mb4&parseTime=True
+  # mysql:
+  #   image: mysql:8.4
+  #   container_name: simrecsign-mysql
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+  #     MYSQL_DATABASE: simrecsign
+  #     MYSQL_USER: simrecsign
+  #     MYSQL_PASSWORD: ${MYSQL_PASSWORD:-simrecsign}
+  #   ports:
+  #     - "3306:3306"
+  #   volumes:
+  #     - mysql-data:/var/lib/mysql
+  #   restart: unless-stopped
+
+volumes:
+  simrecsign-data:
+  simrecsign-storage:
+  # mysql-data:
