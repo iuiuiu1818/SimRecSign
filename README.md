@@ -298,7 +298,6 @@ moblie_run.bat     # 手机端，http://localhost:5173/m/
 | `seed.*` | `SEED_*` | 见文件 | 首次启动种子账号（仅首次生效） |
 | `font_path` | `FONT_PATH` | 内嵌 | PDF 中文渲染字体 |
 | `ca.key_path` / `ca.key_password` | `CA_KEY_PATH` / `CA_KEY_PASSWORD` | `./ca/ca-key.pem` | CA 私钥与口令，**务必备份** |
-| — | `DEMO_MODE` | false | 演示模式：禁止一切写操作，仅可浏览与签署 |
 
 **生产上线检查清单**
 
@@ -340,9 +339,6 @@ A：使用交接链接（见教程第 6 节）；对方注册账号后经链接�
 
 **Q：签署后的 PDF 在哪下载？**
 A：文档详情页（已完成状态）预览并下载最终 PDF；签署有效性可被 Adobe Acrobat 等标准 PDF 阅读器验证。
-
-**Q：演示模式是什么？**
-A：设置环境变量 `DEMO_MODE=true` 后，系统禁止注册/创建/编辑/删除等一切写操作，仅允许浏览与签署，适合对外演示。
 
 ---
 
