@@ -84,8 +84,8 @@
 ---
 ## 在线演示
 - 演示地址: https://sign.qnhelp.top/
-- 默认账号: admin
-- 默认密码: admin
+- 默认账号: test@test.com
+- 默认密码: test123
 
 ## 部署与启动
 
