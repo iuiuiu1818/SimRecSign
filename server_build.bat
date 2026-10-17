@@ -94,9 +94,9 @@ if %ERRORLEVEL% neq 0 (
 echo.
 echo [步骤 3/3] 编译服务端（前端与字体已内嵌）...
 set CGO_ENABLED=0
-set GOOS=linux
-set GOARCH=amd64
-go build -ldflags="-s -w" -o "%BIN_DIR%\simrecsign-server" ./cmd/server
+::set GOOS=linux
+::set GOARCH=amd64
+go build -ldflags="-s -w" -o "%BIN_DIR%\simrecsign-server.exe" ./cmd/server
 if %ERRORLEVEL% equ 0 (
     echo.
     echo ============================================

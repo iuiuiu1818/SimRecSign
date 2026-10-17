@@ -59,7 +59,10 @@ export function usePdfRenderer(
     loading.value = true
     pageError.value = ''
     try {
-      pdfDoc.value = markRaw(await pdfjsLib.getDocument(pdfUrl.value).promise)
+      pdfDoc.value = markRaw(await pdfjsLib.getDocument({
+        url: pdfUrl.value,
+        isEvalSupported: false
+      }).promise)
       if (!isActive) { safeDestroy(pdfDoc.value); pdfDoc.value = null; return }
       totalPages.value = pdfDoc.value.numPages
       currentPage.value = 1

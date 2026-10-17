@@ -1,0 +1,14 @@
+.git
+bin/
+ca/
+storage/
+*.db
+*.pem
+*.key
+*.toml
+node_modules
+.claude/
+docs/
+mobile/
+web/prototype
+*.exe

@@ -1,11 +1,9 @@
-// @ts-nocheck
 interface IOptions {
   width?: number;
   height?: number;
   color?: string;
   bgColor?: string;
   scale?: number;
-  /** 画布被 CSS transform 旋转的角度（90 / -90），用于触摸坐标映射 */
   rotate?: number;
   openSmooth?: boolean;
   minWidth?: number;
@@ -49,7 +47,6 @@ export class SmoothSignature {
   scale = window.devicePixelRatio || 1;
   color = 'black';
   bgColor = '';
-  /** 画布被 CSS transform 旋转的角度（90 / -90），默认 0 表示未旋转 */
   rotate = 0;
   canDraw = false;
   openSmooth = true;
@@ -203,14 +200,10 @@ export class SmoothSignature {
     const e = event.touches && event.touches[0] || event;
     let x = e.clientX - rect.left;
     let y = e.clientY - rect.top;
-    // 画布被 CSS transform 旋转（竖屏强制横屏）时，clientX/clientY 仍是
-    // 未旋转的视口坐标，需映射回画布布局坐标系：
-    // rotate(90deg)（origin top left）：布局 x 对应屏幕 y；布局 y 对应包围盒右边界 - 屏幕 x
     if (this.rotate === 90) {
       x = e.clientY - rect.top;
       y = rect.right - e.clientX;
     } else if (this.rotate === -90) {
-      // rotate(-90deg)：布局 x 对应包围盒下边界 - 屏幕 y；布局 y 对应屏幕 x
       x = rect.bottom - e.clientY;
       y = e.clientX - rect.left;
     }
@@ -343,7 +336,6 @@ export class SmoothSignature {
     this.ctx.lineCap = 'round'
     this.drawBgColor()
     this.addListener()
-    // 重绘已有笔画
     this.redrawAll()
   }
 
