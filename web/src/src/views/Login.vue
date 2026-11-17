@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { authAPI } from '@/api'
@@ -10,14 +10,67 @@ const router = useRouter()
 const userStore = useUserStore()
 
 const isRegister = ref(false)
+const accountType = ref<'email' | 'phone'>('phone')
+const loginMethod = ref<'password' | 'code'>('password')
+
 const form = ref({
   email: '',
   password: '',
   name: '',
   confirmPassword: '',
 })
+const phoneForm = ref({
+  phone: '',
+  code: '',
+  password: '',
+  name: '',
+  confirmPassword: '',
+})
 const loading = ref(false)
 const errorMsg = ref('')
+
+const codeCountdown = ref(0)
+let codeTimer: ReturnType<typeof setInterval> | null = null
+const sendingCode = ref(false)
+
+function validatePhone(v: string): boolean {
+  return /^1[3-9]\d{9}$/.test(v)
+}
+
+async function handleSendCode() {
+  if (sendingCode.value || codeCountdown.value > 0) return
+  clearError()
+  const phone = phoneForm.value.phone.trim()
+  if (!validatePhone(phone)) {
+    errorMsg.value = '请输入正确的11位手机号'
+    return
+  }
+  if (!selectedTenantId.value) {
+    errorMsg.value = '请选择所属机构'
+    return
+  }
+  sendingCode.value = true
+  try {
+    await authAPI.sendPhoneCode({ phone, scene: isRegister.value ? 'register' : 'login', tenantId: selectedTenantId.value })
+    ElMessage.success('验证码已发送，请查收')
+    codeCountdown.value = 60
+    codeTimer = setInterval(() => {
+      codeCountdown.value--
+      if (codeCountdown.value <= 0 && codeTimer) {
+        clearInterval(codeTimer)
+        codeTimer = null
+      }
+    }, 1000)
+  } catch (err) {
+    errorMsg.value = getErrorMessage(err)
+  } finally {
+    sendingCode.value = false
+  }
+}
+
+onUnmounted(() => {
+  if (codeTimer) clearInterval(codeTimer)
+})
 
 const tenants = ref<any[]>([])
 const selectedTenantId = ref('')
@@ -65,6 +118,8 @@ function clearError() {
 }
 
 watch(isRegister, clearError)
+watch(accountType, clearError)
+watch(loginMethod, clearError)
 
 async function loadTenants() {
   try {
@@ -83,29 +138,97 @@ async function handleSubmit() {
 
   if (loading.value) return
 
-  if (!form.value.email || !form.value.password) {
-    errorMsg.value = '请填写邮箱和密码'
-    return
-  }
-  if (isRegister.value && form.value.password !== form.value.confirmPassword) {
-    errorMsg.value = '两次密码输入不一致'
+  if (accountType.value === 'email') {
+    if (!form.value.email || !form.value.password) {
+      errorMsg.value = '请填写邮箱和密码'
+      return
+    }
+    if (isRegister.value && form.value.password !== form.value.confirmPassword) {
+      errorMsg.value = '两次密码输入不一致'
+      return
+    }
+
+    loading.value = true
+    try {
+      if (isRegister.value) {
+        await userStore.register(form.value.email, form.value.password, form.value.name, selectedTenantId.value || undefined)
+        ElMessage.success('注册成功，即将跳转')
+      } else {
+        await userStore.login(form.value.email, form.value.password, selectedTenantId.value || undefined)
+        ElMessage.success('登录成功，即将跳转')
+      }
+      router.push('/dashboard')
+    } catch (err) {
+      errorMsg.value = getErrorMessage(err)
+    } finally {
+      loading.value = false
+    }
     return
   }
 
-  loading.value = true
-  try {
-    if (isRegister.value) {
-      await userStore.register(form.value.email, form.value.password, form.value.name, selectedTenantId.value || undefined)
-      ElMessage.success('注册成功，即将跳转')
-    } else {
-      await userStore.login(form.value.email, form.value.password, selectedTenantId.value || undefined)
-      ElMessage.success('登录成功，即将跳转')
+  const pf = phoneForm.value
+  const phone = pf.phone.trim()
+  if (!validatePhone(phone)) {
+    errorMsg.value = '请输入正确的11位手机号'
+    return
+  }
+  if (!selectedTenantId.value) {
+    errorMsg.value = '请选择所属机构'
+    return
+  }
+
+  if (isRegister.value) {
+    if (!pf.code || !pf.password || !pf.name) {
+      errorMsg.value = '请填写验证码、密码和姓名'
+      return
     }
-    router.push('/dashboard')
-  } catch (err) {
-    errorMsg.value = getErrorMessage(err)
-  } finally {
-    loading.value = false
+    if (pf.password !== pf.confirmPassword) {
+      errorMsg.value = '两次密码输入不一致'
+      return
+    }
+    loading.value = true
+    try {
+      await userStore.registerByPhone(phone, pf.code.trim(), pf.password, pf.name.trim(), selectedTenantId.value || undefined)
+      ElMessage.success('注册成功，即将跳转')
+      router.push('/dashboard')
+    } catch (err) {
+      errorMsg.value = getErrorMessage(err)
+    } finally {
+      loading.value = false
+    }
+    return
+  }
+
+  if (loginMethod.value === 'password') {
+    if (!pf.password) {
+      errorMsg.value = '请输入密码'
+      return
+    }
+    loading.value = true
+    try {
+      await userStore.loginByPhone(phone, pf.password, undefined, selectedTenantId.value)
+      ElMessage.success('登录成功，即将跳转')
+      router.push('/dashboard')
+    } catch (err) {
+      errorMsg.value = getErrorMessage(err)
+    } finally {
+      loading.value = false
+    }
+  } else {
+    if (!pf.code) {
+      errorMsg.value = '请输入验证码'
+      return
+    }
+    loading.value = true
+    try {
+      await userStore.loginByPhone(phone, undefined, pf.code.trim(), selectedTenantId.value)
+      ElMessage.success('登录成功，即将跳转')
+      router.push('/dashboard')
+    } catch (err) {
+      errorMsg.value = getErrorMessage(err)
+    } finally {
+      loading.value = false
+    }
   }
 }
 </script>
@@ -170,7 +293,23 @@ async function handleSubmit() {
             <span>{{ errorMsg }}</span>
           </div>
 
+          <div class="account-type-switch">
+            <button
+              type="button"
+              class="type-btn"
+              :class="{ active: accountType === 'phone' }"
+              @click="accountType = 'phone'"
+            >手机号</button>
+            <button
+              type="button"
+              class="type-btn"
+              :class="{ active: accountType === 'email' }"
+              @click="accountType = 'email'"
+            >邮箱</button>
+          </div>
+
           <el-form
+            v-if="accountType === 'email'"
             :model="form"
             label-position="top"
             class="login-form"
@@ -183,6 +322,8 @@ async function handleSubmit() {
                 :prefix-icon="'Message'"
                 size="large"
               />
+                <p style="color: #999;">测试账号：test@test.com，密码：test@123</p>
+
             </el-form-item>
             <el-form-item v-if="isRegister" label="姓名">
               <el-input
@@ -223,6 +364,113 @@ async function handleSubmit() {
                 />
               </el-select>
             </el-form-item>
+            <el-form-item>
+              <el-button
+                type="primary"
+                size="large"
+                :loading="loading"
+                class="submit-btn"
+                @click="handleSubmit"
+              >
+                {{ isRegister ? '注册' : '登录' }}
+              </el-button>
+            </el-form-item>
+          </el-form>
+
+          <el-form
+            v-else
+            :model="phoneForm"
+            label-position="top"
+            class="login-form"
+            @keyup.enter="handleSubmit"
+          >
+
+            <div v-if="!isRegister" class="login-method-switch">
+              <button
+                type="button"
+                class="method-btn"
+                :class="{ active: loginMethod === 'password' }"
+                @click="loginMethod = 'password'"
+              >密码登录</button>
+              <button
+                type="button"
+                class="method-btn"
+                :class="{ active: loginMethod === 'code' }"
+                @click="loginMethod = 'code'"
+              >验证码登录</button>
+            </div>
+
+            <el-form-item label="手机号">
+              <el-input
+                v-model="phoneForm.phone"
+                placeholder="请输入11位手机号"
+                maxlength="11"
+                :prefix-icon="'Iphone'"
+                size="large"
+              />
+            </el-form-item>
+
+            <el-form-item v-if="isRegister || loginMethod === 'code'" label="验证码">
+              <div class="code-input-row">
+                <el-input
+                  v-model="phoneForm.code"
+                  placeholder="请输入验证码"
+                  maxlength="6"
+                  size="large"
+                />
+                <el-button
+                  size="large"
+                  :disabled="codeCountdown > 0"
+                  :loading="sendingCode"
+                  @click="handleSendCode"
+                >
+                  {{ codeCountdown > 0 ? `${codeCountdown}s 后重发` : '获取验证码' }}
+                </el-button>
+              </div>
+            </el-form-item>
+
+            <el-form-item v-if="isRegister || loginMethod === 'password'" :label="isRegister ? '设置密码' : '密码'">
+              <el-input
+                v-model="phoneForm.password"
+                type="password"
+                show-password
+                :placeholder="isRegister ? '请设置登录密码' : '请输入密码'"
+                :prefix-icon="'Lock'"
+                size="large"
+              />
+            </el-form-item>
+
+            <el-form-item v-if="isRegister" label="姓名">
+              <el-input
+                v-model="phoneForm.name"
+                placeholder="请输入姓名"
+                :prefix-icon="'User'"
+                size="large"
+              />
+            </el-form-item>
+
+            <el-form-item v-if="isRegister" label="确认密码">
+              <el-input
+                v-model="phoneForm.confirmPassword"
+                type="password"
+                show-password
+                placeholder="请再次输入密码"
+                :prefix-icon="'Lock'"
+                size="large"
+              />
+            </el-form-item>
+
+            <el-form-item label="所属机构">
+              <el-select v-model="selectedTenantId" placeholder="选择机构" style="width: 100%">
+                <el-option
+                  v-for="t in tenants"
+                  :key="t.id"
+                  :label="t.name"
+                  :value="t.id"
+                />
+              </el-select>
+            </el-form-item>
+
             <el-form-item>
               <el-button
                 type="primary"
@@ -416,6 +664,76 @@ html.dark .error-alert {
   font-size: 15px;
   color: var(--srs-text-tertiary);
   margin: 0;
+}
+
+.account-type-switch {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 24px;
+  background: var(--srs-bg-page);
+  border-radius: var(--srs-radius-md, 8px);
+  border: 1px solid var(--srs-border);
+}
+
+.type-btn {
+  flex: 1;
+  height: 36px;
+  border: none;
+  border-radius: calc(var(--srs-radius-md, 8px) - 2px);
+  background: transparent;
+  color: var(--srs-text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--srs-transition-fast);
+}
+
+.type-btn.active {
+  background: var(--srs-bg-card);
+  color: var(--srs-primary);
+  font-weight: 600;
+  box-shadow: var(--srs-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.08));
+}
+
+.login-method-switch {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.method-btn {
+  border: none;
+  background: transparent;
+  padding: 4px 0;
+  color: var(--srs-text-tertiary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color var(--srs-transition-fast), border-color var(--srs-transition-fast);
+}
+
+.method-btn.active {
+  color: var(--srs-primary);
+  font-weight: 600;
+  border-bottom-color: var(--srs-primary);
+}
+
+.code-input-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.code-input-row .el-input {
+  flex: 1;
+}
+
+.code-input-row .el-button {
+  flex-shrink: 0;
+  width: 120px;
+  border-radius: var(--srs-radius-md);
 }
 
 .login-form :deep(.el-form-item) {

@@ -14,7 +14,7 @@ const router = useRouter()
 const userStore = useUserStore()
 
 const unreadCount = ref(0)
-const profile = ref({ name: '', email: '' })
+const profile = ref({ name: '', email: '', phone: '' })
 
 onMounted(async () => {
   try {
@@ -27,6 +27,7 @@ onMounted(async () => {
     const data = res.data || res
     profile.value.name = data.name || userStore.userName || ''
     profile.value.email = data.email || ''
+    profile.value.phone = data.phone || ''
   } catch {
     profile.value.name = userStore.userName || ''
   }
@@ -63,7 +64,7 @@ async function handleLogout() {
       </div>
       <div class="profile-info">
         <div class="profile-name">{{ profile.name || '未设置姓名' }}</div>
-        <div class="profile-email muted">{{ profile.email || '未绑定邮箱' }}</div>
+        <div class="profile-email muted">{{ profile.phone || profile.email || '未绑定手机号/邮箱' }}</div>
       </div>
       <IconArrowRight :size="18" color="var(--srs-text-tertiary)" @click="router.push('/settings/profile')" class="profile-edit" />
     </div>

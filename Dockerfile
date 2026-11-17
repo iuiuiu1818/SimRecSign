@@ -49,7 +49,7 @@ EXPOSE 8080
 
 ENV HTTP_ADDR=:8080
 ENV DB_DRIVER=sqlite
-ENV DB_DSN=/app/data/simrecsign.db
+ENV DB_DSN=file:/app/data/simrecsign.db?_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)
 ENV STORAGE_BASEPATH=/app/storage
 ENV FONT_PATH=/app/fonts/NotoSansSC-Regular.ttf
 

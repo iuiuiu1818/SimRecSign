@@ -56,7 +56,7 @@ async function loadRoles() {
 }
 
 const createDialogVisible = ref(false)
-const createForm = ref({ name: '', email: '', password: '', departmentId: '', role: 'user' })
+const createForm = ref({ name: '', email: '', password: '', phone: '', departmentId: '', role: 'user' })
 const saving = ref(false)
 
 const departments = ref<any[]>([])
@@ -75,7 +75,7 @@ onMounted(() => {
 })
 
 function openCreate() {
-  createForm.value = { name: '', email: '', password: '', departmentId: '', role: 'user' }
+  createForm.value = { name: '', email: '', password: '', phone: '', departmentId: '', role: 'user' }
   createDialogVisible.value = true
 }
 
@@ -88,9 +88,14 @@ async function handleCreate() {
     ElMessage.warning('邮箱格式不正确')
     return
   }
+  const phone = createForm.value.phone.trim()
+  if (phone && !/^1[3-9]\d{9}$/.test(phone)) {
+    ElMessage.warning('手机号格式不正确')
+    return
+  }
   saving.value = true
   try {
-    await userAPI.create(createForm.value)
+    await userAPI.create({ ...createForm.value, phone: phone || undefined })
     ElMessage.success('创建成功')
     createDialogVisible.value = false
     loadList()
@@ -99,10 +104,10 @@ async function handleCreate() {
 }
 
 const editDialogVisible = ref(false)
-const editForm = ref({ id: '', name: '', email: '', departmentId: '' })
+const editForm = ref({ id: '', name: '', email: '', phone: '', departmentId: '' })
 
 function openEdit(row: any) {
-  editForm.value = { id: row.id, name: row.name, email: row.email, departmentId: row.departmentId || '' }
+  editForm.value = { id: row.id, name: row.name, email: row.email, phone: row.phone || '', departmentId: row.departmentId || '' }
   editDialogVisible.value = true
 }
 
@@ -111,11 +116,17 @@ async function handleEdit() {
     ElMessage.warning('请填写完整信息')
     return
   }
+  const phone = editForm.value.phone.trim()
+  if (phone && !/^1[3-9]\d{9}$/.test(phone)) {
+    ElMessage.warning('手机号格式不正确')
+    return
+  }
   saving.value = true
   try {
     await userAPI.update(editForm.value.id, {
       name: editForm.value.name,
       email: editForm.value.email,
+      phone,
       departmentId: editForm.value.departmentId || undefined,
     })
     ElMessage.success('修改成功')
@@ -173,7 +184,7 @@ async function handleToggleStatus(row: any) {
     <div class="toolbar">
       <el-form :inline="true" @keyup.enter="handleSearch">
         <el-form-item>
-          <el-input v-model="keyword" placeholder="搜索姓名/邮箱" clearable style="width: 240px" @clear="handleSearch" />
+          <el-input v-model="keyword" placeholder="搜索姓名/邮箱/手机号" clearable style="width: 240px" @clear="handleSearch" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleSearch">查询</el-button>
@@ -183,7 +194,12 @@ async function handleToggleStatus(row: any) {
 
     <el-table :data="users" stripe v-loading="loading" empty-text="暂无用户">
       <el-table-column prop="name" label="姓名" width="140" />
-      <el-table-column prop="email" label="邮箱" min-width="200" />
+      <el-table-column label="邮箱" min-width="200">
+        <template #default="{ row }">{{ row.email || '—' }}</template>
+      </el-table-column>
+      <el-table-column label="手机号" width="140">
+        <template #default="{ row }">{{ row.phone || '—' }}</template>
+      </el-table-column>
       <el-table-column label="部门" width="140">
         <template #default="{ row }">{{ row.departmentName || '—' }}</template>
       </el-table-column>
@@ -212,7 +228,7 @@ async function handleToggleStatus(row: any) {
       <el-table-column label="创建时间" width="180">
         <template #default="{ row }">{{ new Date(row.createdAt).toLocaleString() }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="240" fixed="right">
+      <el-table-column label="操作" width="140" fixed="right">
         <template #default="{ row }">
           <el-button link type="primary" size="small" @click="openEdit(row)">编辑</el-button>
           <el-button link type="primary" size="small" @click="openRole(row)">角色</el-button>
@@ -246,6 +262,9 @@ async function handleToggleStatus(row: any) {
         </el-form-item>
         <el-form-item label="邮箱" required>
           <el-input v-model="createForm.email" placeholder="name@company.com" />
+        </el-form-item>
+        <el-form-item label="手机号">
+          <el-input v-model="createForm.phone" placeholder="请输入11位手机号（选填）" maxlength="11" />
         </el-form-item>
         <el-form-item label="密码" required>
           <el-input v-model="createForm.password" type="password" show-password placeholder="请输入密码" />
@@ -286,6 +305,9 @@ async function handleToggleStatus(row: any) {
         </el-form-item>
         <el-form-item label="邮箱" required>
           <el-input v-model="editForm.email" placeholder="name@company.com" />
+        </el-form-item>
+        <el-form-item label="手机号">
+          <el-input v-model="editForm.phone" placeholder="请输入11位手机号（清空即解绑）" maxlength="11" />
         </el-form-item>
         <el-form-item label="部门">
           <el-select v-model="editForm.departmentId" placeholder="选择部门" clearable style="width: 100%">

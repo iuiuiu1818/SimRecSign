@@ -92,12 +92,7 @@ async function loadPDF() {
   const seq = ++pdfLoadSeq
   pdfLoading.value = true
   try {
-    const token = localStorage.getItem('token')
-    const resp = await fetch(templateAPI.getPDFUrl(tplId), {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    })
-    if (!resp.ok) throw new Error('加载 PDF 失败')
-    const blob = await resp.blob()
+    const blob = await templateAPI.downloadPDF(tplId) as unknown as Blob
     if (seq !== pdfLoadSeq) return
     if (pdfUrl.value) URL.revokeObjectURL(pdfUrl.value)
     pdfUrl.value = URL.createObjectURL(blob)
@@ -307,13 +302,7 @@ async function handlePublish() {
       confirmButtonText: '发布',
       cancelButtonText: '取消',
     })
-    const token = localStorage.getItem('token')
-    const resp = await fetch(`/api/v1/templates/${tplId}/publish`, {
-      method: 'PATCH',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    })
-    const data = await resp.json()
-    if (data.code !== 0) throw new Error(data.msg)
+    await templateAPI.publish(tplId)
     ElMessage.success('发布成功')
     await loadTemplate()
   } catch (e: any) {
@@ -328,13 +317,7 @@ async function handleUnpublish() {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
     })
-    const token = localStorage.getItem('token')
-    const resp = await fetch(`/api/v1/templates/${tplId}/unpublish`, {
-      method: 'PATCH',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    })
-    const data = await resp.json()
-    if (data.code !== 0) throw new Error(data.msg)
+    await templateAPI.unpublish(tplId)
     ElMessage.success('已取消发布')
     await loadTemplate()
   } catch (e: any) {

@@ -24,7 +24,7 @@ http.interceptors.response.use(
   },
   (error) => {
     const url = error.config?.url || ''
-    const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/register')
+    const isAuthEndpoint = ['/auth/login', '/auth/register', '/auth/phone/'].some(p => url.includes(p))
 
     if (error.response?.status === 401) {
       if (!isAuthEndpoint) {
@@ -79,6 +79,15 @@ export const authAPI = {
   },
   login(data: { email: string; password: string; tenantId?: string }) {
     return http.post('/auth/login', data)
+  },
+  sendPhoneCode(data: { phone: string; scene: string; tenantId?: string }) {
+    return http.post('/auth/phone/code', data)
+  },
+  registerByPhone(data: { phone: string; code: string; password: string; name: string; tenantId?: string }) {
+    return http.post('/auth/phone/register', data)
+  },
+  loginByPhone(data: { phone: string; password?: string; code?: string; tenantId?: string }) {
+    return http.post('/auth/phone/login', data)
   },
   listTenants() {
     return http.get('/auth/tenants')
@@ -211,13 +220,22 @@ export const userAPI = {
   changePassword(data: { oldPassword: string; newPassword: string }) {
     return http.put('/users/me/password', data)
   },
+  sendBindPhoneCode(phone: string) {
+    return http.post('/users/me/phone/code', { phone })
+  },
+  bindPhone(data: { phone: string; code: string }) {
+    return http.put('/users/me/phone', data)
+  },
+  unbindPhone(password: string) {
+    return http.delete('/users/me/phone', { data: { password } })
+  },
   list(params?: { keyword?: string; page?: number; pageSize?: number }) {
     return http.get('/users', { params })
   },
-  create(data: { name: string; email: string; password: string; departmentId?: string; role: string }) {
+  create(data: { name: string; email: string; password: string; phone?: string; departmentId?: string; role: string }) {
     return http.post('/users', data)
   },
-  update(id: string, data: { name?: string; email?: string; departmentId?: string }) {
+  update(id: string, data: { name?: string; email?: string; phone?: string; departmentId?: string }) {
     return http.put(`/users/${id}`, data)
   },
   changeStatus(id: string, status: 'active' | 'disabled') {
@@ -249,6 +267,9 @@ export const templateAPI = {
   },
   getPDFUrl(id: string) {
     return `/api/v1/templates/${id}/pdf`
+  },
+  downloadPDF(id: string) {
+    return http.get(`/templates/${id}/pdf`, { responseType: 'blob' })
   },
   uploadPDF(data: FormData) {
     return http.post('/templates/upload', data, {

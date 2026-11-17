@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { authAPI } from '@/api'
@@ -11,6 +11,9 @@ const route = useRoute()
 const userStore = useUserStore()
 
 const activeTab = ref(0)
+const loginType = ref(0)
+const registerType = ref(0)
+const phoneLoginMethod = ref<'password' | 'code'>('password')
 const loading = ref(false)
 const tenants = ref<{ id: string; name: string }[]>([])
 const selectedTenantId = ref('')
@@ -18,8 +21,13 @@ const showTenantPicker = ref(false)
 
 const loginForm = ref({ email: '', password: '' })
 const registerForm = ref({ email: '', password: '', confirmPassword: '', name: '' })
+const phoneForm = ref({ phone: '', code: '', password: '', confirmPassword: '', name: '' })
 
-const formErrors = ref({ email: '', password: '', name: '', confirmPassword: '' })
+const formErrors = ref({ email: '', password: '', name: '', confirmPassword: '', phone: '', code: '' })
+
+const codeCountdown = ref(0)
+const sendingCode = ref(false)
+let codeTimer: ReturnType<typeof setInterval> | null = null
 
 onMounted(async () => {
   try {
@@ -30,6 +38,10 @@ onMounted(async () => {
     }
   } catch {
   }
+})
+
+onUnmounted(() => {
+  if (codeTimer) clearInterval(codeTimer)
 })
 
 function validateEmail(v: string): boolean {
@@ -46,7 +58,70 @@ function validatePassword(v: string): boolean {
   return true
 }
 
+function validatePhone(v: string): boolean {
+  if (!v) { formErrors.value.phone = '请输入手机号'; return false }
+  if (!/^1[3-9]\d{9}$/.test(v)) { formErrors.value.phone = '手机号格式不正确'; return false }
+  formErrors.value.phone = ''
+  return true
+}
+
+async function handleSendCode() {
+  if (sendingCode.value || codeCountdown.value > 0) return
+  const phone = phoneForm.value.phone.trim()
+  if (!validatePhone(phone)) return
+  if (!selectedTenantId.value) { showToast('请选择租户'); return }
+  sendingCode.value = true
+  try {
+    await authAPI.sendPhoneCode({ phone, scene: activeTab.value === 0 ? 'login' : 'register', tenantId: selectedTenantId.value })
+    showToast('验证码已发送')
+    codeCountdown.value = 60
+    codeTimer = setInterval(() => {
+      codeCountdown.value--
+      if (codeCountdown.value <= 0 && codeTimer) {
+        clearInterval(codeTimer)
+        codeTimer = null
+      }
+    }, 1000)
+  } catch (e: any) {
+    showToast(e?.message || '发送失败')
+  } finally {
+    sendingCode.value = false
+  }
+}
+
 async function handleLogin() {
+  if (loginType.value === 1) {
+    const pf = phoneForm.value
+    const phone = pf.phone.trim()
+    if (!validatePhone(phone)) return
+    if (!selectedTenantId.value) { showToast('请选择租户'); return }
+    if (phoneLoginMethod.value === 'password') {
+      if (!validatePassword(pf.password)) return
+      loading.value = true
+      try {
+        await userStore.loginByPhone(phone, pf.password, undefined, selectedTenantId.value)
+        showToast('登录成功')
+        const redirect = (route.query.redirect as string) || '/dashboard'
+        router.push(redirect)
+      } catch (e: any) {
+        showToast(e?.message || '登录失败')
+      } finally { loading.value = false }
+    } else {
+      if (!pf.code.trim()) { formErrors.value.code = '请输入验证码'; return }
+      formErrors.value.code = ''
+      loading.value = true
+      try {
+        await userStore.loginByPhone(phone, undefined, pf.code.trim(), selectedTenantId.value)
+        showToast('登录成功')
+        const redirect = (route.query.redirect as string) || '/dashboard'
+        router.push(redirect)
+      } catch (e: any) {
+        showToast(e?.message || '登录失败')
+      } finally { loading.value = false }
+    }
+    return
+  }
+
   const validE = validateEmail(loginForm.value.email)
   const validP = validatePassword(loginForm.value.password)
   if (!validE || !validP) return
@@ -65,6 +140,28 @@ async function handleLogin() {
 }
 
 async function handleRegister() {
+  if (registerType.value === 1) {
+    const pf = phoneForm.value
+    const phone = pf.phone.trim()
+    let valid = true
+    if (!validatePhone(phone)) valid = false
+    if (!pf.code.trim()) { formErrors.value.code = '请输入验证码'; valid = false } else { formErrors.value.code = '' }
+    if (!pf.name) { formErrors.value.name = '请输入姓名'; valid = false } else { formErrors.value.name = '' }
+    if (!validatePassword(pf.password)) valid = false
+    if (pf.password !== pf.confirmPassword) { formErrors.value.confirmPassword = '两次密码不一致'; valid = false } else { formErrors.value.confirmPassword = '' }
+    if (!valid) return
+
+    loading.value = true
+    try {
+      await userStore.registerByPhone(phone, pf.code.trim(), pf.password, pf.name, selectedTenantId.value || undefined)
+      showToast('注册成功')
+      router.push('/dashboard')
+    } catch (e: any) {
+      showToast(e?.message || '注册失败')
+    } finally { loading.value = false }
+    return
+  }
+
   let valid = true
   if (!registerForm.value.name) { formErrors.value.name = '请输入姓名'; valid = false }
   else { formErrors.value.name = '' }
@@ -115,7 +212,7 @@ async function handleRegister() {
     <div class="login-card">
 
       <van-field
-        v-if="tenants.length > 1"
+        v-if="(activeTab === 1 || activeTab === 0) && tenants.length > 1"
         v-model="selectedTenantId"
         label="租户"
         placeholder="请选择租户"
@@ -124,96 +221,245 @@ async function handleRegister() {
         @click="showTenantPicker = true"
       />
       <van-field
-        v-else-if="tenants.length === 1"
+        v-else-if="(activeTab === 1 || activeTab === 0) && tenants.length === 1"
         :model-value="tenants[0].name"
         label="租户"
         readonly
       />
 
-      <van-tabs v-model:active="activeTab" sticky>
+      <van-tabs v-model:active="activeTab">
         <van-tab title="登录">
-          <van-form @submit="handleLogin" class="auth-form">
-            <van-field
-              v-model="loginForm.email"
-              label="邮箱"
-              type="email"
-              placeholder="请输入邮箱"
-              :error-message="formErrors.email"
-              @blur="validateEmail(loginForm.email)"
-              clearable
-            />
-            <van-field
-              v-model="loginForm.password"
-              label="密码"
-              type="password"
-              placeholder="请输入密码"
-              :error-message="formErrors.password"
-              @blur="validatePassword(loginForm.password)"
-            />
-            <div class="form-btn-wrapper">
-              <van-button
-                round
-                block
-                type="primary"
-                native-type="submit"
-                :loading="loading"
-                loading-text="登录中..."
-                class="auth-btn"
-              >
-                登录
-              </van-button>
-            </div>
-          </van-form>
+
+          <van-tabs v-model:active="loginType" class="login-type-tabs" :offset-top="0">
+            <van-tab title="邮箱">
+              <van-form @submit="handleLogin" class="auth-form">
+                <van-field
+                  v-model="loginForm.email"
+                  label="邮箱"
+                  type="email"
+                  placeholder="请输入邮箱"
+                  :error-message="formErrors.email"
+                  @blur="validateEmail(loginForm.email)"
+                  clearable
+                />
+                <van-field
+                  v-model="loginForm.password"
+                  label="密码"
+                  type="password"
+                  placeholder="请输入密码"
+                  :error-message="formErrors.password"
+                  @blur="validatePassword(loginForm.password)"
+                />
+                <div class="form-btn-wrapper">
+                  <van-button
+                    round
+                    block
+                    type="primary"
+                    native-type="submit"
+                    :loading="loading"
+                    loading-text="登录中..."
+                    class="auth-btn"
+                  >
+                    登录
+                  </van-button>
+                </div>
+              </van-form>
+            </van-tab>
+
+            <van-tab title="手机号">
+              <van-form @submit="handleLogin" class="auth-form">
+
+                <van-radio-group
+                  v-model="phoneLoginMethod"
+                  direction="horizontal"
+                  class="phone-method-group"
+                >
+                  <van-radio name="password">密码登录</van-radio>
+                  <van-radio name="code">验证码登录</van-radio>
+                </van-radio-group>
+
+                <van-field
+                  v-model="phoneForm.phone"
+                  label="手机号"
+                  type="tel"
+                  maxlength="11"
+                  placeholder="请输入11位手机号"
+                  :error-message="formErrors.phone"
+                  @blur="validatePhone(phoneForm.phone)"
+                  clearable
+                />
+                <van-field
+                  v-if="phoneLoginMethod === 'code'"
+                  v-model="phoneForm.code"
+                  label="验证码"
+                  type="digit"
+                  maxlength="6"
+                  placeholder="请输入验证码"
+                  :error-message="formErrors.code"
+                >
+                  <template #button>
+                    <van-button
+                      size="small"
+                      type="primary"
+                      :disabled="codeCountdown > 0"
+                      :loading="sendingCode"
+                      @click.prevent="handleSendCode"
+                    >
+                      {{ codeCountdown > 0 ? `${codeCountdown}s` : '获取验证码' }}
+                    </van-button>
+                  </template>
+                </van-field>
+                <van-field
+                  v-if="phoneLoginMethod === 'password'"
+                  v-model="phoneForm.password"
+                  label="密码"
+                  type="password"
+                  placeholder="请输入密码"
+                  :error-message="formErrors.password"
+                  @blur="validatePassword(phoneForm.password)"
+                />
+                <div class="form-btn-wrapper">
+                  <van-button
+                    round
+                    block
+                    type="primary"
+                    native-type="submit"
+                    :loading="loading"
+                    loading-text="登录中..."
+                    class="auth-btn"
+                  >
+                    登录
+                  </van-button>
+                </div>
+              </van-form>
+            </van-tab>
+          </van-tabs>
         </van-tab>
 
         <van-tab title="注册">
-          <van-form @submit="handleRegister" class="auth-form">
-            <van-field
-              v-model="registerForm.name"
-              label="姓名"
-              placeholder="请输入姓名"
-              :error-message="formErrors.name"
-              clearable
-            />
-            <van-field
-              v-model="registerForm.email"
-              label="邮箱"
-              type="email"
-              placeholder="请输入邮箱"
-              :error-message="formErrors.email"
-              @blur="validateEmail(registerForm.email)"
-              clearable
-            />
-            <van-field
-              v-model="registerForm.password"
-              label="密码"
-              type="password"
-              placeholder="请设置密码（至少6位）"
-              :error-message="formErrors.password"
-              @blur="validatePassword(registerForm.password)"
-            />
-            <van-field
-              v-model="registerForm.confirmPassword"
-              label="确认密码"
-              type="password"
-              placeholder="再次输入密码"
-              :error-message="formErrors.confirmPassword"
-              @blur="registerForm.confirmPassword && registerForm.password !== registerForm.confirmPassword ? formErrors.confirmPassword = '两次密码不一致' : formErrors.confirmPassword = ''"
-            />
-            <div class="form-btn-wrapper">
-              <van-button
-                round
-                block
-                type="primary"
-                native-type="submit"
-                :loading="loading"
-                loading-text="注册中..."
-                class="auth-btn"
-              >
-                注册
-              </van-button>
-            </div>
-          </van-form>
+
+          <van-tabs v-model:active="registerType" class="login-type-tabs" :offset-top="0">
+            <van-tab title="邮箱">
+              <van-form @submit="handleRegister" class="auth-form">
+                <van-field
+                  v-model="registerForm.name"
+                  label="姓名"
+                  placeholder="请输入姓名"
+                  :error-message="formErrors.name"
+                  clearable
+                />
+                <van-field
+                  v-model="registerForm.email"
+                  label="邮箱"
+                  type="email"
+                  placeholder="请输入邮箱"
+                  :error-message="formErrors.email"
+                  @blur="validateEmail(registerForm.email)"
+                  clearable
+                />
+                <van-field
+                  v-model="registerForm.password"
+                  label="密码"
+                  type="password"
+                  placeholder="请设置密码（至少6位）"
+                  :error-message="formErrors.password"
+                  @blur="validatePassword(registerForm.password)"
+                />
+                <van-field
+                  v-model="registerForm.confirmPassword"
+                  label="确认密码"
+                  type="password"
+                  placeholder="再次输入密码"
+                  :error-message="formErrors.confirmPassword"
+                  @blur="registerForm.confirmPassword && registerForm.password !== registerForm.confirmPassword ? formErrors.confirmPassword = '两次密码不一致' : formErrors.confirmPassword = ''"
+                />
+                <div class="form-btn-wrapper">
+                  <van-button
+                    round
+                    block
+                    type="primary"
+                    native-type="submit"
+                    :loading="loading"
+                    loading-text="注册中..."
+                    class="auth-btn"
+                  >
+                    注册
+                  </van-button>
+                </div>
+              </van-form>
+            </van-tab>
+
+            <van-tab title="手机号">
+              <van-form @submit="handleRegister" class="auth-form">
+                <van-field
+                  v-model="phoneForm.phone"
+                  label="手机号"
+                  type="tel"
+                  maxlength="11"
+                  placeholder="请输入11位手机号"
+                  :error-message="formErrors.phone"
+                  @blur="validatePhone(phoneForm.phone)"
+                  clearable
+                />
+                <van-field
+                  v-model="phoneForm.code"
+                  label="验证码"
+                  type="digit"
+                  maxlength="6"
+                  placeholder="请输入验证码"
+                  :error-message="formErrors.code"
+                >
+                  <template #button>
+                    <van-button
+                      size="small"
+                      type="primary"
+                      :disabled="codeCountdown > 0"
+                      :loading="sendingCode"
+                      @click.prevent="handleSendCode"
+                    >
+                      {{ codeCountdown > 0 ? `${codeCountdown}s` : '获取验证码' }}
+                    </van-button>
+                  </template>
+                </van-field>
+                <van-field
+                  v-model="phoneForm.name"
+                  label="姓名"
+                  placeholder="请输入姓名"
+                  :error-message="formErrors.name"
+                  clearable
+                />
+                <van-field
+                  v-model="phoneForm.password"
+                  label="密码"
+                  type="password"
+                  placeholder="请设置密码（至少6位）"
+                  :error-message="formErrors.password"
+                  @blur="validatePassword(phoneForm.password)"
+                />
+                <van-field
+                  v-model="phoneForm.confirmPassword"
+                  label="确认密码"
+                  type="password"
+                  placeholder="再次输入密码"
+                  :error-message="formErrors.confirmPassword"
+                  @blur="phoneForm.confirmPassword && phoneForm.password !== phoneForm.confirmPassword ? formErrors.confirmPassword = '两次密码不一致' : formErrors.confirmPassword = ''"
+                />
+                <div class="form-btn-wrapper">
+                  <van-button
+                    round
+                    block
+                    type="primary"
+                    native-type="submit"
+                    :loading="loading"
+                    loading-text="注册中..."
+                    class="auth-btn"
+                  >
+                    注册
+                  </van-button>
+                </div>
+              </van-form>
+            </van-tab>
+          </van-tabs>
         </van-tab>
       </van-tabs>
     </div>
@@ -332,5 +578,18 @@ async function handleRegister() {
 
 .auth-btn:active {
   transform: scale(0.98);
+}
+
+.login-type-tabs :deep(.van-tabs__nav) {
+  background: transparent;
+}
+
+.login-type-tabs :deep(.van-tab) {
+  font-size: 13px;
+  padding: 0 12px;
+}
+
+.phone-method-group {
+  padding: 8px 16px 4px;
 }
 </style>

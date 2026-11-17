@@ -7,7 +7,7 @@ services:
     environment:
       - HTTP_ADDR=:8080
       - DB_DRIVER=sqlite
-      - DB_DSN=/app/data/simrecsign.db
+      - DB_DSN=file:/app/data/simrecsign.db?_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)
       - STORAGE_BASEPATH=/app/storage
       - JWT_SECRET=${JWT_SECRET:?请设置 JWT_SECRET 环境变量}
       - JWT_TTL_MINUTES=1440

@@ -79,8 +79,11 @@ function actionLabel(action: string) {
     handoff_generate: '生成交接链接',
     handoff_revoke: '作废交接链接',
     handoff_bind: '绑定交接链接',
+    register: '注册',
     login: '登录',
     logout: '登出',
+    phone_bind: '绑定手机号',
+    phone_unbind: '解绑手机号',
   }
   return m[action] || action
 }
@@ -154,8 +157,11 @@ onMounted(loadLogs)
               <el-option label="绑定交接链接" value="handoff_bind" />
             </el-option-group>
             <el-option-group label="认证">
+              <el-option label="注册" value="register" />
               <el-option label="登录" value="login" />
               <el-option label="登出" value="logout" />
+              <el-option label="绑定手机号" value="phone_bind" />
+              <el-option label="解绑手机号" value="phone_unbind" />
             </el-option-group>
           </el-select>
         </el-form-item>

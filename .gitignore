@@ -4,6 +4,7 @@ mobile/node_modules/
 mobile/dist/
 *.db
 *.exe
+*.bat
 config.toml
 server/config.toml
 .trae/
@@ -26,9 +27,11 @@ skill.md
 ca/
 .superpowers/
 *.ttf
+
 # 内嵌到二进制的构建产物（由 server_build 从 web/src/dist、mobile/dist 复制而来，非源码）
 server/webstatic/webroot/
 server/webstatic/mobroot/
 
 # 例外：随仓库提交的内嵌中文字体（保证单文件 exe 始终可内嵌，不受 *.ttf 规则影响）
 !server/webstatic/fonts/NotoSansSC-Regular.ttf
+server_build.bat
